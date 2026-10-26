@@ -56,6 +56,11 @@
             <small id="patch-hint">Choose the patch set to apply to your executable.</small>
           </label>
 
+          <div id="supported-box" class="supported-box" aria-live="polite">
+            <span class="supported-label">Supported versions</span>
+            <strong id="supported-version"></strong>
+          </div>
+
           <label class="field-group">
             <span class="field-label">Executable file</span>
             <span class="file-picker">
@@ -90,6 +95,9 @@
           <button id="patch-button" type="submit" class="btn-primary">
             <span>Apply patch</span><span aria-hidden="true">→</span>
           </button>
+          <p class="performance-notice">
+            Patching speed depends on your device's hardware and the size of the executable.
+          </p>
         </form>
 
         <section id="status" class="status-card hidden" aria-live="polite">

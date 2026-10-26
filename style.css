@@ -50,6 +50,7 @@ select {
 .topbar {
   justify-content: space-between;
   margin-bottom: 50px;
+  animation: enter 520ms ease both;
 }
 
 .brand {
@@ -96,15 +97,16 @@ select {
 .hero {
   position: relative;
   display: flex;
-  min-height: 270px;
+  min-height: 224px;
   align-items: center;
   justify-content: space-between;
   overflow: hidden;
   margin-bottom: 24px;
-  padding: 38px 52px;
+  padding: 30px 42px;
   border: 1px solid var(--line);
   border-radius: 20px;
   background: linear-gradient(112deg, rgba(29, 39, 49, 0.96), rgba(23, 32, 41, 0.92));
+  animation: enter 620ms 70ms ease both;
 }
 
 .hero-copy {
@@ -162,6 +164,7 @@ h1 span {
 .orbit-one {
   width: 245px;
   height: 140px;
+  animation: orbit-drift 12s ease-in-out infinite alternate;
 }
 
 .orbit-two {
@@ -169,6 +172,7 @@ h1 span {
   height: 200px;
   border-color: rgba(159, 178, 207, 0.11);
   transform: translate(-50%, -50%) rotate(54deg);
+  animation: orbit-drift 15s ease-in-out infinite alternate-reverse;
 }
 
 .chip {
@@ -228,6 +232,7 @@ h1 span {
   border-radius: 20px;
   background: rgba(25, 33, 42, 0.93);
   box-shadow: 0 22px 60px rgba(0, 0, 0, 0.12);
+  animation: enter 620ms 140ms ease both;
 }
 
 .section-heading {
@@ -306,6 +311,36 @@ h2 {
 .field-group select:focus {
   border-color: rgba(139, 219, 189, 0.65);
   box-shadow: 0 0 0 3px rgba(139, 219, 189, 0.08);
+}
+
+.supported-box {
+  display: grid;
+  gap: 5px;
+  padding: 12px 14px;
+  border: 1px solid rgba(139, 219, 189, 0.17);
+  border-radius: 9px;
+  background: rgba(139, 219, 189, 0.045);
+  animation: reveal 220ms ease both;
+}
+
+.supported-label {
+  color: var(--muted);
+  font-size: 0.67rem;
+}
+
+.supported-box strong {
+  color: var(--accent);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.performance-notice {
+  margin: -8px 0 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .file-picker {
@@ -464,6 +499,37 @@ h2 {
   transform: translateY(-1px);
 }
 
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0.5;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes orbit-drift {
+  from {
+    transform: translate(-50%, -50%) rotate(-24deg) scale(0.98);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(-17deg) scale(1.02);
+  }
+}
+
 .btn-primary:focus-visible,
 .download-link:focus-visible {
   outline: 2px solid #e8edf5;
@@ -572,6 +638,17 @@ h2 {
 
 .hidden {
   display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @media (max-width: 720px) {
