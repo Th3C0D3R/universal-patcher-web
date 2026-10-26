@@ -4,6 +4,7 @@ const filenameInput = document.getElementById("filename-input");
 const patchSelect = document.getElementById("patch-select");
 const patchHint = document.getElementById("patch-hint");
 const supportedVersion = document.getElementById("supported-version");
+const patchSupportList = document.getElementById("patch-support-list");
 const selectedFileName = document.getElementById("file-name");
 const dryRunInput = document.getElementById("dry-run");
 const overwriteInput = document.getElementById("overwrite");
@@ -97,6 +98,17 @@ const Patches = {
 		"maxSupported": "7.23"
 	}
 };
+
+for (const [patchName, patchSet] of Object.entries(Patches)) {
+	const row = document.createElement("tr");
+	const nameCell = document.createElement("th");
+	const versionCell = document.createElement("td");
+	nameCell.scope = "row";
+	nameCell.textContent = patchName;
+	versionCell.textContent = `${patchSet.minSupported} – ${patchSet.maxSupported}`;
+	row.append(nameCell, versionCell);
+	patchSupportList.appendChild(row);
+}
 
 for (const patchName of Object.keys(Patches)) {
 	const option = document.createElement("option");
