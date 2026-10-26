@@ -137,23 +137,51 @@ function updateSelectedPatch(patchName, matchedFile) {
 function parsePattern(pattern) {
 	const bytes = [];
 	const mask = [];
+	const expressions = [];
 
-	for (const token of pattern.split(/\s+/)) {
+	for (const token of pattern.trim().split(/\s+/).filter(Boolean)) {
 		if (token === "??") {
 			bytes.push(0);
 			mask.push(0);
-		} else {
-			bytes.push(Number.parseInt(token, 16));
-			mask.push(1);
+			expressions.push(null);
+			continue;
 		}
+
+		const expressionMatch = token.match(/^\(\?\?([+-])(\d+)\)$/);
+		if (expressionMatch) {
+			bytes.push(0);
+			mask.push(0);
+			expressions.push({
+				operator: expressionMatch[1],
+				value: BigInt(expressionMatch[2]),
+			});
+			continue;
+		}
+
+		if (!/^[+-]?(?:0[xX])?[0-9a-fA-F]+$/.test(token)) {
+			throw new Error(`Invalid pattern token: ${token}`);
+		}
+
+		const byte = Number.parseInt(token, 16);
+		if (!Number.isInteger(byte) || byte < 0 || byte > 0xff) {
+			throw new Error(`Invalid byte value: ${token}`);
+		}
+
+		bytes.push(byte);
+		mask.push(1);
+		expressions.push(null);
 	}
 
-	return { bytes: Uint8Array.from(bytes), mask: Uint8Array.from(mask) };
+	return {
+		bytes: Uint8Array.from(bytes),
+		mask: Uint8Array.from(mask),
+		expressions,
+	};
 }
 
-function scanPattern(data, searchBytes, searchMask) {
+function findMatches(data, searchBytes, searchMask) {
+	const positions = [];
 	const patLen = searchBytes.length;
-	let count = 0;
 	const limit = data.length - patLen + 1;
 
 	for (let i = 0; i < limit; i += 1) {
@@ -166,38 +194,38 @@ function scanPattern(data, searchBytes, searchMask) {
 			}
 		}
 
-		if (matched) count += 1;
+		if (matched) positions.push(i);
 	}
 
-	return count;
+	return positions;
 }
 
-function applyPatch(data, searchBytes, searchMask, replaceBytes, replaceMask) {
+function scanPattern(data, searchBytes, searchMask) {
+	return findMatches(data, searchBytes, searchMask).length;
+}
+
+function applyPatch(data, searchBytes, searchMask, replaceBytes, replaceMask, replaceExpressions) {
 	const patched = new Uint8Array(data);
 	const patLen = searchBytes.length;
-	let count = 0;
-	const limit = patched.length - patLen + 1;
+	const positions = findMatches(patched, searchBytes, searchMask);
 
-	for (let i = 0; i < limit; i += 1) {
-		let matched = true;
+	for (const i of positions) {
+		const originalSlice = patched.slice(i, i + patLen);
 
 		for (let j = 0; j < patLen; j += 1) {
-			if (searchMask[j] && patched[i + j] !== searchBytes[j]) {
-				matched = false;
-				break;
+			if (replaceMask[j]) {
+				patched[i + j] = replaceBytes[j];
+			} else if (replaceExpressions[j]) {
+				const { operator, value } = replaceExpressions[j];
+				const delta = operator === "+" ? value : -value;
+				patched[i + j] = Number(
+					((BigInt(originalSlice[j]) + delta) % 256n + 256n) % 256n,
+				);
 			}
 		}
-
-		if (!matched) continue;
-
-		for (let j = 0; j < patLen; j += 1) {
-			if (replaceMask[j]) patched[i + j] = replaceBytes[j];
-		}
-
-		count += 1;
 	}
 
-	return { data: patched, count };
+	return { data: patched, count: positions.length };
 }
 
 function buildPatchMap(patchName) {
@@ -233,6 +261,7 @@ function runPatch(arrayBuffer, patchName, dryRun = false) {
 			search.mask,
 			replace.bytes,
 			replace.mask,
+			replace.expressions,
 		);
 
 		output = patched;
