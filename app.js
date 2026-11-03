@@ -86,7 +86,7 @@ const Patches = {
 			]
 		],
 		"minSupported": "6.42.63",
-		"maxSupported": "6.43.16"
+		"maxSupported": "6.43.17"
 	}
 	,
 	"WinRAR.exe": {
